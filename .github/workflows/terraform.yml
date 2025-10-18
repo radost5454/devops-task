@@ -22,7 +22,7 @@ jobs:
           terraform_version: 1.8.5
 
       - name: Decode and write GCP credentials
-        run: echo "${{ secrets.GOOGLE_CREDENTIALS_B64 }}" | base64 --decode > $HOME/key.json
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS }}" | base64 --decode > $HOME/key.json
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
