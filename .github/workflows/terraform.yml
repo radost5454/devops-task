@@ -10,6 +10,11 @@ on:
         type: choice
         options: [plan, apply, destroy]
 
+permissions:
+  contents: read
+  id-token: write
+  actions: write  
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
