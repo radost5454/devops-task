@@ -21,10 +21,13 @@ jobs:
         with:
           terraform_version: 1.8.5
 
+      - name: Decode and write GCP credentials
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_B64 }}" | base64 --decode > $HOME/key.json
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          credentials_json: ${{ github.workspace }}/$HOME/key.json
 
       - name: Terraform Init
         working-directory: infra
