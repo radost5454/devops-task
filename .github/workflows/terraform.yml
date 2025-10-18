@@ -15,64 +15,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1 - Checkout repo
       - uses: actions/checkout@v4
 
-      # Step 2 - Set up Terraform
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.5
 
-      # Step 3 - Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-      # Step 4 - Download state file (if exists)
-      - name: Download previous Terraform state (if exists)
-        id: download_state
-        uses: actions/download-artifact@v4
-        continue-on-error: true
+      - name: Restore Terraform state from previous run
+        if: ${{ github.event.inputs.action == 'destroy' || github.event.inputs.action == 'plan' }}
+        uses: dawidd6/action-download-artifact@v3
         with:
-          name: terraform-state
-          path: terraform/
+          workflow: terraform.yml          
+          name: terraform-state            
+          path: terraform/                
+          search_artifacts: true
+          if_no_artifact_found: warn
 
-      - name: Show download result
-        run: |
-          if [ "${{ steps.download_state.outcome }}" = "failure" ]; then
-            echo "⚠️ No previous state found — first run or artifact expired."
-          else
-            echo "✅ State file restored from artifact."
-          fi
+      - name: Show Terraform directory
+        run: ls -la terraform || echo "No terraform directory found"
 
-      # Step 5 - Terraform Init
       - name: Terraform Init
         working-directory: terraform
         run: terraform init -input=false
 
-      # Step 6 - Terraform Plan
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
         working-directory: terraform
         run: terraform plan -input=false -out=tfplan
 
-      # Step 7 - Terraform Apply
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
         working-directory: terraform
         run: terraform apply -auto-approve
 
-      # Step 8 - Terraform Destroy
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
         working-directory: terraform
         run: terraform destroy -auto-approve
 
-      # Step 9 - Upload new state file (after apply or plan)
       - name: Save Terraform state
         if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'plan' }}
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state
-          path: terraform/terraform.tfstate
+          path: |
+            terraform/terraform.tfstate
+            terraform/terraform.tfstate.backup
+          if-no-files-found: warn
