@@ -27,7 +27,7 @@ jobs:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
       - name: Terraform Init
-        working-directory: infra
+        working-directory: terraform
         run: terraform init -input=false
 
       - name: Download State
@@ -35,21 +35,21 @@ jobs:
         continue-on-error: true
         with:
           name: terraform-state
-          path: infra/
+          path: terraform/
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
-        working-directory: infra
+        working-directory: terraform
         run: terraform plan -input=false -out=tfplan
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
-        working-directory: infra
+        working-directory: terraform
         run: terraform apply -input=false tfplan
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        working-directory: infra
+        working-directory: terraform
         run: terraform destroy -auto-approve
 
       - name: Save State
@@ -57,4 +57,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state
-          path: infra/terraform.tfstate
+          path: terraform/terraform.tfstate

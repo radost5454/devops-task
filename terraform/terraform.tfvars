@@ -1,0 +1,5 @@
+project_id   = "teak-serenity-475107-e2"
+region       = "us-central1"
+db_password  = "ChangeMe123!"
+db_user      = "appuser"
+db_name      = "appdb"
