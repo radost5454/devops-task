@@ -11,9 +11,8 @@ on:
         options: [plan, apply, destroy]
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
-  actions: write  
 
 jobs:
   terraform:
@@ -28,6 +27,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install git-crypt
+        run: sudo apt-get update && sudo apt-get install -y git-crypt
+
+      - name: Unlock git-crypt
+        run: |
+          echo "${{ secrets.GIT_CRYPT_KEY }}" | base64 --decode > /tmp/git-crypt-key
+          git-crypt unlock /tmp/git-crypt-key
+          echo "git-crypt unlocked successfully"
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.5
@@ -36,16 +44,6 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-      - name: Restore Terraform state
-        if: ${{ github.event.inputs.action == 'plan' || github.event.inputs.action == 'destroy' }}
-        uses: dawidd6/action-download-artifact@v3
-        with:
-          workflow: terraform.yml
-          name: terraform-state
-          path: terraform/
-          search_artifacts: true
-          if_no_artifact_found: warn
 
       - name: Terraform Init
         working-directory: terraform
@@ -66,12 +64,16 @@ jobs:
         working-directory: terraform
         run: terraform destroy -auto-approve
 
-      - name: Save Terraform state
+      - name: Commit updated state (encrypts automatically via git-crypt)
         if: ${{ github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-state
-          path: |
-            terraform/terraform.tfstate
-            terraform/terraform.tfstate.backup
-          if-no-files-found: warn
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add terraform/terraform.tfstate terraform/terraform.tfstate.backup || true
+          if git diff --cached --quiet; then
+            echo "No state changes to commit"
+          else
+            git commit -m "Update Terraform state [skip ci]"
+            git push
+            echo "Encrypted state committed back to repo"
+          fi
