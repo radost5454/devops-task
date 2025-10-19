@@ -10,6 +10,10 @@ on:
         type: choice
         options: [plan, apply, destroy]
 
+  workflow_run:
+    workflows: ["Build and Push Docker Image on CI:Build Label"]
+    types: [completed]
+
 permissions:
   contents: write
   id-token: write
@@ -17,6 +21,10 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+
     env:
       TF_VAR_project_id: ${{ secrets.TF_VAR_project_id }}
       TF_VAR_region: ${{ secrets.TF_VAR_region }}
@@ -50,14 +58,34 @@ jobs:
         run: terraform init -input=false
 
       - name: Terraform Plan
-        if: ${{ github.event.inputs.action == 'plan' }}
+        if: >
+          github.event_name == 'workflow_run' ||
+          github.event.inputs.action == 'plan'
         working-directory: terraform
-        run: terraform plan -input=false -out=tfplan
+        run: |
+          terraform plan -input=false -out=tfplan
+          echo "Terraform plan completed successfully."
+
+      - name: Upload Terraform plan artifact
+        if: >
+          github.event_name == 'workflow_run' ||
+          github.event.inputs.action == 'plan'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/tfplan
+
+      - name: Download Terraform plan
+        if: ${{ github.event.inputs.action == 'apply' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
         working-directory: terraform
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve tfplan
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
@@ -76,7 +104,6 @@ jobs:
           if [ -f terraform/terraform.tfstate ]; then
             git add -f terraform/terraform.tfstate || true
           fi
-
           if [ -f terraform/terraform.tfstate.backup ]; then
             git add -f terraform/terraform.tfstate.backup || true
           fi
@@ -86,5 +113,5 @@ jobs:
           else
             git commit -m "Update Terraform state [skip ci]"
             git push
-            echo "Encrypted state committed back to repo"
+            echo "✅ Encrypted state committed back to repo"
           fi
