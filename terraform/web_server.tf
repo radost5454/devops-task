@@ -38,15 +38,13 @@ resource "google_compute_instance" "web_server" {
                 value: ${var.db_password}
               - name: DB_PORT
                 value: "5432"
-            securityContext:
-              privileged: true
             ports:
               - name: http
-                hostPort: 8080
                 containerPort: 8080
         restartPolicy: Always
-      EOT
+    EOT
   }
+
 
   depends_on = [google_compute_instance.postgres_database]
 }
