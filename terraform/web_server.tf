@@ -13,7 +13,7 @@ resource "google_compute_instance" "web_server" {
 
   network_interface {
     network = google_compute_network.main_network.self_link
-    access_config {} 
+    # access_config {} 
   }
 
   scheduling {
