@@ -1,10 +1,8 @@
-# Create a basic VPC network
 resource "google_compute_network" "main_network" {
   name                    = "project-network"
   auto_create_subnetworks = true
 }
 
-# Allow internal traffic between all VMs
 resource "google_compute_firewall" "allow_internal" {
   name    = "allow-internal"
   network = google_compute_network.main_network.name

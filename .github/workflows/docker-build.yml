@@ -6,7 +6,6 @@ on:
 
 jobs:
   build_and_push:
-    # Run only when PR is merged AND has label "CI:Build"
     if: >
       github.event.pull_request.merged == true &&
       contains(github.event.pull_request.labels.*.name, 'CI:Build')

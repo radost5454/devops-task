@@ -13,7 +13,7 @@ resource "google_compute_instance" "load_balancer" {
 
   network_interface {
     network = google_compute_network.main_network.self_link
-    access_config {} # assign public IP
+    access_config {}
   }
 
   scheduling {

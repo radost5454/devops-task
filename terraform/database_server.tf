@@ -1,4 +1,3 @@
-# PostgreSQL database VM using Container-Optimized OS
 resource "google_compute_instance" "postgres_database" {
   name         = "postgres-database"
   machine_type = "e2-micro"

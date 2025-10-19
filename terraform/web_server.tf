@@ -1,4 +1,3 @@
-# Flask web server VM using Container-Optimized OS (COS)
 resource "google_compute_instance" "web_server" {
   name         = "flask-web-server"
   machine_type = "e2-micro"
@@ -14,7 +13,7 @@ resource "google_compute_instance" "web_server" {
 
   network_interface {
     network = google_compute_network.main_network.self_link
-    access_config {}  # Assigns public IP
+    access_config {} 
   }
 
   scheduling {
@@ -22,7 +21,6 @@ resource "google_compute_instance" "web_server" {
     on_host_maintenance = "MIGRATE"
   }
 
-  # Run Flask container from GitHub Container Registry
   metadata = {
     "gce-container-declaration" = <<-EOT
       spec:
