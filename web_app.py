@@ -17,11 +17,10 @@ def get_db_connection():
 
 @app.get("/")
 def home():
-    return jsonify(message="Hello from Flask on GCP!")
+    return jsonify(message="The healtchek of the app is working which is with /")
 
 @app.get("/db-check")
 def db_check():
-    """Run a simple SQL query like SELECT version()"""
     try:
         with get_db_connection() as conn, conn.cursor() as cur:
             cur.execute("SELECT version();")
@@ -32,7 +31,7 @@ def db_check():
 
 @app.get("/healthz")
 def health():
-    return ("ok", 200)
+    return ("ok of the healthz check ", 200)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
