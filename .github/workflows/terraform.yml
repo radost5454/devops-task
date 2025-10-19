@@ -67,9 +67,20 @@ jobs:
       - name: Commit updated state (encrypts automatically via git-crypt)
         if: ${{ github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply' }}
         run: |
+          echo "=== Checking for Terraform state files ==="
+          find terraform -maxdepth 1 -type f -name "*.tfstate*" -ls || echo "No tfstate files found"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add terraform/terraform.tfstate terraform/terraform.tfstate.backup || true
+
+          if [ -f terraform/terraform.tfstate ]; then
+            git add -f terraform/terraform.tfstate || true
+          fi
+
+          if [ -f terraform/terraform.tfstate.backup ]; then
+            git add -f terraform/terraform.tfstate.backup || true
+          fi
+
           if git diff --cached --quiet; then
             echo "No state changes to commit"
           else
