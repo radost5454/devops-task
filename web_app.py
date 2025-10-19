@@ -17,7 +17,7 @@ def get_db_connection():
 
 @app.get("/")
 def home():
-    return jsonify(message="The healtchek of the app is working which is with /")
+    return jsonify(message="The healtchek of the app is working ")
 
 @app.get("/db-check")
 def db_check():
@@ -31,7 +31,7 @@ def db_check():
 
 @app.get("/healthz")
 def health():
-    return ("ok of the healthz check ", 200)
+    return ("ok for the healthz check ", 200)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
