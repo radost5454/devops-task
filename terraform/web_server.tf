@@ -13,7 +13,7 @@ resource "google_compute_instance" "web_server" {
 
   network_interface {
     network = google_compute_network.main_network.self_link
-    # access_config {} 
+    access_config {} 
   }
 
   scheduling {
@@ -38,13 +38,15 @@ resource "google_compute_instance" "web_server" {
                 value: ${var.db_password}
               - name: DB_PORT
                 value: "5432"
+            securityContext:
+              privileged: true
             ports:
               - name: http
+                hostPort: 8080
                 containerPort: 8080
         restartPolicy: Always
-    EOT
+      EOT
   }
-
 
   depends_on = [google_compute_instance.postgres_database]
 }
