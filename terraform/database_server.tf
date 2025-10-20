@@ -44,3 +44,28 @@ resource "google_compute_instance" "postgres_database" {
     EOT
   }
 }
+
+resource "google_compute_resource_policy" "daily_snapshots" {
+name   = "daily-snapshots"
+region = var.region
+
+snapshot_schedule_policy {
+  schedule {
+    daily_schedule {
+      days_in_cycle = 1
+      start_time    = "03:00"
+    }
+  }
+
+  retention_policy {
+    max_retention_days    = 7
+    on_source_disk_delete = "KEEP_AUTO_SNAPSHOTS"
+  }
+}
+}
+
+resource "google_compute_disk_resource_policy_attachment" "snap_db_boot" {
+name = google_compute_resource_policy.daily_snapshots.name
+disk = google_compute_instance.postgres_database.name
+zone = "${var.region}-a"
+}
