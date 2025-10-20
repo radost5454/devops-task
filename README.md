@@ -109,6 +109,7 @@ Run it from the **Actions** tab:
    db_user     = ""
    db_password = ""
    db_name     = ""
+   alert_email = ""
    ```
    or export environment variables:
    ```bash
@@ -117,6 +118,7 @@ Run it from the **Actions** tab:
    export TF_VAR_db_user=<USERNAME>
    export TF_VAR_db_password=<PASSWORD>
    export TF_VAR_db_name=<DB_NAME>
+   export TF_VAR_alert_email=<EMAIL_FOR_RECIVING_ALERTS>
    ```
 
 5. Authenticate to GCP:
@@ -196,11 +198,6 @@ scheduling {
 
 > **By default**, both of these properties are set to `true` in GCP instances, meaning that all newly created instances automatically benefit from these behaviors even if you don’t explicitly configure them.
 
-  **Official Terraform Documentation:**  
-[google_compute_instance — Scheduling block](https://registry.terraform.io/providers/hashicorp/google/6.50.0/docs/resources/compute_instance)
-
-This ensures that if a VM or the underlying physical host fails, the instance is either restarted or seamlessly migrated with no manual action required.
-
 ---
 
 ### Container-Level Resilience (Container-Optimized OS)
@@ -220,9 +217,9 @@ This ensures:
 
 Example from Dockerfile:
 ```dockerfile
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -fsS http://localhost:${PORT}/healthz || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3   CMD curl -fsS http://localhost:${PORT}/healthz || exit 1
 ```
+
 ---
 
 ### Data Backup and Recovery (Automated Snapshots)
@@ -238,7 +235,7 @@ resource "google_compute_resource_policy" "daily_snapshots" {
     schedule {
       daily_schedule {
         days_in_cycle = 1
-        start_time    = "03:00" 
+        start_time    = "03:00"
       }
     }
 
@@ -256,12 +253,18 @@ resource "google_compute_disk_resource_policy_attachment" "snap_db_boot" {
 }
 ```
 
-- **Daily Snapshot Schedule:** Automatically creates a snapshot of the PostgreSQL boot disk every day at **03:00 UTC**.  
-- **Retention Policy:** Keeps each snapshot for **7 days**, maintaining a rolling backup window.  
-- **Persistence:** Snapshots are **retained even if the source disk is deleted**, allowing full recovery of the database when needed.  
+---
 
-This configuration ensures that database data can be quickly restored to a previous state in case of system failure, corruption, or accidental deletion, providing an additional layer of **resilience and disaster recovery** to the overall infrastructure.
+### Cloud Monitoring and Alerting for Database Connectivity
 
+To improve observability and ensure database connectivity, the infrastructure integrates **Google Cloud Monitoring** to track the availability of the Flask application's `/db-check` endpoint.
+
+#### Features:
+- **Uptime Check** — Periodically tests the `/db-check` HTTP endpoint exposed via the load balancer.  
+- **Alert Policy** — Triggers an email alert if the Flask app cannot connect to the PostgreSQL database for over 2 minutes.  
+- **Notification Channel** — Sends automated alerts to a configured email address defined in Terraform.  
+
+This proactive monitoring approach ensures that both application health and database connectivity are continuously observed, and immediate alerts are delivered when failures occur.
 
 ---
 
