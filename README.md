@@ -280,9 +280,9 @@ gcloud compute instances list
 Then test your endpoints:
 
 ```bash
-curl http://<LOAD_BALANCER_IP>/
-curl http://<LOAD_BALANCER_IP>/healthz
-curl http://<LOAD_BALANCER_IP>/db-check
+curl http://<LOAD_BALANCER_EXTERNAL_IP>/
+curl http://<LOAD_BALANCER_EXTERNAL_IP>/healthz
+curl http://<LOAD_BALANCER_EXTERNAL_IP>/db-check
 ```
 
 Expected responses:
