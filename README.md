@@ -197,6 +197,7 @@ scheduling {
   → During GCP host maintenance, the instance live-migrates to another host without downtime.  
 
 > **By default**, both of these properties are set to `true` in GCP instances, meaning that all newly created instances automatically benefit from these behaviors even if you don’t explicitly configure them.
+[Official Documentation] (https://registry.terraform.io/providers/hashicorp/google/6.50.0/docs/resources/compute_instance)
 
 ---
 
