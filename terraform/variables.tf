@@ -23,3 +23,8 @@ variable "db_name" {
   description = "Database name"
   type        = string
 }
+
+variable "alert_email" {
+  description = "Email address to receive uptime alerts"
+  type        = string
+}
