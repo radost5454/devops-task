@@ -1,7 +1,7 @@
 resource "google_compute_instance" "load_balancer" {
   name         = "nginx-load-balancer"
   machine_type = "e2-micro"
-  zone         = "${var.region}"
+  zone         = "${var.region}-a"
   tags         = ["load-balancer"]
 
   boot_disk {

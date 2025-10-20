@@ -1,7 +1,7 @@
 resource "google_compute_instance" "postgres_database" {
   name         = "postgres-database"
   machine_type = "e2-micro"
-  zone         = "${var.region}"
+  zone         = "${var.region}-a"
   tags         = ["database"]
 
   boot_disk {

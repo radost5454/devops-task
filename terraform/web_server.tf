@@ -1,7 +1,7 @@
 resource "google_compute_instance" "web_server" {
   name         = "flask-web-server"
   machine_type = "e2-micro"
-  zone         = "${var.region}"
+  zone         = "${var.region}-a"
   tags         = ["web"]
 
   boot_disk {
